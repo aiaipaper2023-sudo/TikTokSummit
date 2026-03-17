@@ -26,19 +26,20 @@
       document.getElementById('welcome-msg').textContent = `欢迎, ${user.username} (${user.role})`;
 
       const pages = [
-        { id: 'v2v', title: 'V2V 视频转视频', desc: '将已有视频素材转化为新版本，支持风格迁移与多语言适配。', icon: '🔄', roles: ['admin','creator'] },
-        { id: 'p2v', title: 'P2V 商品转视频', desc: '从商品信息自动生成营销短视频，AI 驱动的内容生产管线。', icon: '🎬', roles: ['admin','creator'] },
-        { id: 'spy', title: 'Spy 竞品监控', desc: '追踪竞品动态、热门素材与投放策略，数据驱动决策。', icon: '🔍', roles: ['admin','analyst'] },
-        { id: 'admin', title: '用户管理', desc: '管理用户账号、分配角色与权限。', icon: '⚙️', roles: ['admin'] },
+        { id: 'v2v', title: 'V2V 视频转视频', desc: '将已有视频素材转化为新版本，支持风格迁移与多语言适配。', icon: '🔄', href: 'https://v2v.tiktoksummit.com', roles: ['admin','creator'] },
+        { id: 'p2v', title: 'P2V 商品转视频', desc: '从商品信息自动生成营销短视频，AI 驱动的内容生产管线。', icon: '🎬', href: 'https://p2v.tiktoksummit.com', roles: ['admin','creator'] },
+        { id: 'spy', title: 'Spy 竞品监控', desc: '追踪竞品动态、热门素材与投放策略，数据驱动决策。', icon: '🔍', href: 'https://spy.tiktoksummit.com', roles: ['admin','analyst'] },
+        { id: 'admin', title: '用户管理', desc: '管理用户账号、分配角色与权限。', icon: '⚙️', href: 'admin.html', roles: ['admin'] },
       ];
 
       const html = pages
         .filter(p => p.roles.includes(user.role))
         .map(p => `
-          <a href="${p.id}.html" class="card" style="text-decoration:none;color:inherit;">
+          <a href="${p.href}" class="card" style="text-decoration:none;color:inherit;">
             <div style="font-size:32px;margin-bottom:12px;">${p.icon}</div>
             <h3>${p.title}</h3>
             <p>${p.desc}</p>
+            ${p.href.startsWith('https://') ? `<div style="margin-top:12px;font-size:12px;color:#25f4ee;">${p.href.replace('https://','')} →</div>` : ''}
           </a>
         `).join('');
       document.getElementById('page-links').innerHTML = html;

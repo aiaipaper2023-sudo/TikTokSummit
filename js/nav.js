@@ -4,18 +4,18 @@ function renderNav(activePage) {
   if (!user) return '';
 
   const pages = [
-    { id: 'dashboard', label: '控制台', icon: '📊', roles: ['admin', 'creator', 'analyst', 'viewer'] },
-    { id: 'v2v', label: 'V2V', icon: '🔄', roles: ['admin', 'creator'] },
-    { id: 'p2v', label: 'P2V', icon: '🎬', roles: ['admin', 'creator'] },
-    { id: 'spy', label: 'Spy', icon: '🔍', roles: ['admin', 'analyst'] },
-    { id: 'admin', label: '用户管理', icon: '⚙️', roles: ['admin'] },
+    { id: 'dashboard', label: '控制台', icon: '📊', href: 'dashboard.html', roles: ['admin', 'creator', 'analyst', 'viewer'] },
+    { id: 'v2v', label: 'V2V', icon: '🔄', href: 'https://v2v.tiktoksummit.com', roles: ['admin', 'creator'] },
+    { id: 'p2v', label: 'P2V', icon: '🎬', href: 'https://p2v.tiktoksummit.com', roles: ['admin', 'creator'] },
+    { id: 'spy', label: 'Spy', icon: '🔍', href: 'https://spy.tiktoksummit.com', roles: ['admin', 'analyst'] },
+    { id: 'admin', label: '用户管理', icon: '⚙️', href: 'admin.html', roles: ['admin'] },
   ];
 
   const links = pages
     .filter(p => p.roles.includes(user.role))
     .map(p => {
       const active = p.id === activePage ? ' active' : '';
-      return `<a href="${p.id === 'dashboard' ? 'dashboard' : p.id}.html" class="nav-item${active}">${p.icon} ${p.label}</a>`;
+      return `<a href="${p.href}" class="nav-item${active}">${p.icon} ${p.label}</a>`;
     }).join('');
 
   return `
