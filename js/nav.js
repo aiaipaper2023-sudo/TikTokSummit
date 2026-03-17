@@ -5,9 +5,9 @@ function renderNav(activePage) {
 
   const pages = [
     { id: 'dashboard', label: '控制台', icon: '📊', href: 'dashboard.html', roles: ['admin', 'creator', 'analyst', 'viewer'] },
-    { id: 'v2v', label: 'V2V', icon: '🔄', href: 'v2v.html', roles: ['admin', 'creator'] },
-    { id: 'p2v', label: 'P2V', icon: '🎬', href: 'p2v.html', roles: ['admin', 'creator'] },
-    { id: 'spy', label: 'Spy', icon: '🔍', href: 'spy.html', roles: ['admin', 'analyst'] },
+    { id: 'v2v', label: 'V2V', icon: '🔄', href: 'https://v2v.tiktoksummit.com', roles: ['admin', 'creator'] },
+    { id: 'p2v', label: 'P2V', icon: '🎬', href: 'https://v2v.tiktoksummit.com', roles: ['admin', 'creator'] },
+    { id: 'spy', label: 'Spy', icon: '🔍', href: 'https://spy.tiktoksummit.com', roles: ['admin', 'analyst'] },
     { id: 'admin', label: '用户管理', icon: '⚙️', href: 'admin.html', roles: ['admin'] },
   ];
 
