@@ -1,6 +1,9 @@
 // Simple auth system with localStorage
 const DEFAULT_USERS = [
-  { username: 'admin', password: 'admin12345', role: 'admin' }
+  { username: 'admin', password: 'admin12345', role: 'admin' },
+  { username: 'edward', password: 'rizzway', role: 'admin' },
+  { username: 'dk', password: 'rizzway', role: 'admin' },
+  { username: 'demon', password: 'rizzway', role: 'admin' }
 ];
 
 // Initialize users store
@@ -32,6 +35,8 @@ function login(username, password) {
 
 function logout() {
   localStorage.removeItem('tks_current');
+  // Clear cross-subdomain auth cookie
+  document.cookie = 'tks_auth=; domain=.tiktoksummit.com; path=/; secure; max-age=0';
   window.location.href = 'index.html';
 }
 
@@ -42,7 +47,7 @@ function getCurrentUser() {
 
 // Permission map: role -> allowed pages
 const PERMISSIONS = {
-  admin: ['v2v', 'p2v', 'spy', 'admin'],
+  admin: ['v2v', 'p2v', 'spy', 'admin', 'analytics'],
   creator: ['v2v', 'p2v'],
   analyst: ['spy'],
   viewer: []

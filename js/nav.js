@@ -8,6 +8,7 @@ function renderNav(activePage) {
     { id: 'v2v', label: 'V2V', icon: '🔄', href: 'https://v2v.tiktoksummit.com', roles: ['admin', 'creator'] },
     { id: 'p2v', label: 'P2V', icon: '🎬', href: 'https://v2v.tiktoksummit.com', roles: ['admin', 'creator'] },
     { id: 'spy', label: 'Spy', icon: '🔍', href: 'https://spy.tiktoksummit.com', roles: ['admin', 'analyst'] },
+    { id: 'analytics', label: '数据分析', icon: '📈', href: 'analytics.html', roles: ['admin'] },
     { id: 'admin', label: '用户管理', icon: '⚙️', href: 'admin.html', roles: ['admin'] },
   ];
 

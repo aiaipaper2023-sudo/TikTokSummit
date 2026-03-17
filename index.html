@@ -220,7 +220,7 @@
       <a href="#products">产品</a>
       <a href="#speakers">嘉宾</a>
       <a href="https://v2v.tiktoksummit.com">V2V</a>
-      <a href="https://v2v.tiktoksummit.com">P2V</a>
+      <a href="https://p2v.tiktoksummit.com">P2V</a>
       <a href="https://spy.tiktoksummit.com">Spy</a>
       <a href="#" onclick="openLogin(); return false;" class="btn-login">登录</a>
     </div>
@@ -247,11 +247,11 @@
         <p>将已有视频素材转化为新版本，支持风格迁移、多语言适配与批量处理。</p>
         <div style="margin-top:16px;font-size:13px;color:#25f4ee;">v2v.tiktoksummit.com →</div>
       </a>
-      <a href="https://v2v.tiktoksummit.com" class="card" style="text-decoration:none;color:inherit;">
+      <a href="https://p2v.tiktoksummit.com" class="card" style="text-decoration:none;color:inherit;">
         <div class="card-icon">🎬</div>
         <h3>P2V 商品转视频</h3>
         <p>从商品信息自动生成营销短视频，AI 驱动的内容生产管线。</p>
-        <div style="margin-top:16px;font-size:13px;color:#25f4ee;">v2v.tiktoksummit.com →</div>
+        <div style="margin-top:16px;font-size:13px;color:#25f4ee;">p2v.tiktoksummit.com →</div>
       </a>
       <a href="https://spy.tiktoksummit.com" class="card" style="text-decoration:none;color:inherit;">
         <div class="card-icon">🔍</div>
@@ -345,26 +345,39 @@
       if (e.key === 'Escape') closeLogin();
     });
 
-    function handleLogin(e) {
+    async function handleLogin(e) {
       e.preventDefault();
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
-      const user = login(username, password);
-      if (user) {
-        window.location.href = 'dashboard.html';
-      } else {
-        const err = document.getElementById('login-error');
-        err.textContent = '用户名或密码错误';
-        err.style.display = 'block';
+      try {
+        const res = await fetch('/api/auth/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        if (!res.ok) throw new Error('auth failed');
+        const data = await res.json();
+        // Set cross-subdomain cookie
+        document.cookie = `tks_auth=${data.token}; domain=.tiktoksummit.com; path=/; secure; samesite=lax; max-age=86400`;
+        // Also save to localStorage for portal pages
+        localStorage.setItem('tks_current', JSON.stringify({ username: data.username, role: data.role }));
+        // Redirect to return URL or dashboard
+        const params = new URLSearchParams(window.location.search);
+        const returnUrl = params.get('return');
+        window.location.href = returnUrl || 'dashboard.html';
+      } catch(err) {
+        const errEl = document.getElementById('login-error');
+        errEl.textContent = '用户名或密码错误';
+        errEl.style.display = 'block';
       }
     }
     function socialLogin(provider) {
       alert(provider.toUpperCase() + ' 登录功能开发中');
     }
 
-    // Show message if redirected
+    // Auto-open login if redirected from subdomain or login required
     const params = new URLSearchParams(window.location.search);
-    if (params.get('msg') === 'login_required') openLogin();
+    if (params.get('login') === '1' || params.get('msg') === 'login_required') openLogin();
   </script>
 
 </body>
