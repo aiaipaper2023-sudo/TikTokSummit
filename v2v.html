@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>V2V - TikTok Summit</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="app-nav"></div>
+  <div class="page">
+    <div class="page-header">
+      <h1>🔄 V2V 视频转视频</h1>
+      <p>将已有视频素材转化为新版本，支持风格迁移与多语言适配</p>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="stat">0</div><h3>今日任务</h3><p>已提交的转换任务</p></div>
+      <div class="card"><div class="stat">0</div><h3>处理中</h3><p>正在转换的视频</p></div>
+      <div class="card"><div class="stat">0</div><h3>已完成</h3><p>可下载的成品</p></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>任务ID</th><th>源视频</th><th>目标风格</th><th>状态</th><th>创建时间</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.2);padding:40px;">暂无任务，功能开发中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/nav.js"></script>
+  <script>if (requireAuth('v2v')) injectNav('v2v');</script>
+</body>
+</html>

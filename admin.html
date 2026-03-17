@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户管理 - TikTok Summit</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="app-nav"></div>
+  <div class="page">
+    <div class="page-header">
+      <h1>⚙️ 用户管理</h1>
+      <p>管理用户账号、分配角色与页面权限</p>
+    </div>
+
+    <div id="alert-area"></div>
+
+    <!-- Add user form -->
+    <div class="card" style="margin-bottom:24px;">
+      <h3 style="margin-bottom:16px;">添加用户</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" id="new-username" placeholder="用户名">
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="new-password" placeholder="密码">
+        </div>
+        <div class="form-group">
+          <label>角色</label>
+          <select id="new-role">
+            <option value="creator">creator — V2V + P2V</option>
+            <option value="analyst">analyst — Spy</option>
+            <option value="viewer">viewer — 仅控制台</option>
+            <option value="admin">admin — 全部权限</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" onclick="handleAdd()">添加</button>
+      </div>
+    </div>
+
+    <!-- Role permission reference -->
+    <div class="card" style="margin-bottom:24px;">
+      <h3 style="margin-bottom:12px;">权限说明</h3>
+      <table>
+        <thead><tr><th>角色</th><th>V2V</th><th>P2V</th><th>Spy</th><th>用户管理</th></tr></thead>
+        <tbody>
+          <tr><td>admin</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td>creator</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+          <tr><td>analyst</td><td>❌</td><td>❌</td><td>✅</td><td>❌</td></tr>
+          <tr><td>viewer</td><td>❌</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- User list -->
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>用户名</th><th>角色</th><th>可访问页面</th><th>操作</th></tr></thead>
+        <tbody id="user-list"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/nav.js"></script>
+  <script>
+    if (!requireAuth('admin')) { /* redirected */ }
+    else {
+      injectNav('admin');
+      renderUsers();
+    }
+
+    function renderUsers() {
+      const users = getUsers();
+      const tbody = document.getElementById('user-list');
+      tbody.innerHTML = users.map(u => {
+        const pages = (PERMISSIONS[u.role] || []).join(', ') || '无';
+        const isAdmin = u.username === 'admin';
+        return `<tr>
+          <td>${u.username}</td>
+          <td><span class="user-badge">${u.role}</span></td>
+          <td>${pages}</td>
+          <td>${isAdmin ? '<span style="color:rgba(255,255,255,0.2)">不可删除</span>' :
+            `<button class="btn btn-sm btn-danger" onclick="handleDelete('${u.username}')">删除</button>`}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function handleAdd() {
+      const username = document.getElementById('new-username').value.trim();
+      const password = document.getElementById('new-password').value;
+      const role = document.getElementById('new-role').value;
+
+      if (!username || !password) {
+        showAlert('请填写用户名和密码', 'error'); return;
+      }
+      if (addUser(username, password, role)) {
+        showAlert(`用户 ${username} 已添加 (${role})`, 'success');
+        document.getElementById('new-username').value = '';
+        document.getElementById('new-password').value = '';
+        renderUsers();
+      } else {
+        showAlert('用户名已存在', 'error');
+      }
+    }
+
+    function handleDelete(username) {
+      if (confirm(`确定删除用户 ${username}？`)) {
+        deleteUser(username);
+        showAlert(`用户 ${username} 已删除`, 'success');
+        renderUsers();
+      }
+    }
+
+    function showAlert(msg, type) {
+      const area = document.getElementById('alert-area');
+      area.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
+      setTimeout(() => area.innerHTML = '', 3000);
+    }
+  </script>
+</body>
+</html>

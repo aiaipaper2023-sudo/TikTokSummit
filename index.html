@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TikTok Summit 2026</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #000;
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Nav */
+    nav {
+      position: fixed; top: 0; width: 100%; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 20px 48px;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .logo {
+      font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #25f4ee, #fe2c55);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: #fff; }
+    .btn-login {
+      padding: 8px 24px; border-radius: 24px; font-size: 14px; font-weight: 600;
+      background: linear-gradient(135deg, #25f4ee, #fe2c55);
+      color: #fff; border: none; cursor: pointer; text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .btn-login:hover { opacity: 0.85; }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; text-align: center;
+      padding: 120px 24px 80px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(37,244,238,0.12) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 50%, rgba(254,44,85,0.08) 0%, transparent 50%);
+    }
+    .hero-badge {
+      display: inline-block; padding: 6px 16px; border-radius: 20px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 32px;
+    }
+    .hero h1 {
+      font-size: clamp(48px, 8vw, 96px); font-weight: 800;
+      line-height: 1.05; letter-spacing: -2px; margin-bottom: 24px;
+    }
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, #25f4ee, #fe2c55);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 18px; color: rgba(255,255,255,0.6); max-width: 560px;
+      line-height: 1.6; margin-bottom: 48px;
+    }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .btn-primary {
+      padding: 14px 36px; border-radius: 28px; font-size: 16px; font-weight: 600;
+      background: linear-gradient(135deg, #25f4ee, #fe2c55);
+      color: #fff; border: none; cursor: pointer; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(254,44,85,0.3);
+    }
+    .btn-secondary {
+      padding: 14px 36px; border-radius: 28px; font-size: 16px; font-weight: 600;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15);
+      color: #fff; cursor: pointer; text-decoration: none;
+      transition: background 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+    /* Info cards */
+    .info { padding: 80px 48px; }
+    .info h2 {
+      font-size: 36px; font-weight: 700; text-align: center;
+      margin-bottom: 56px; letter-spacing: -1px;
+    }
+    .cards {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px; max-width: 1000px; margin: 0 auto;
+    }
+    .card {
+      padding: 32px; border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .card:hover {
+      border-color: rgba(37,244,238,0.3);
+      transform: translateY(-4px);
+    }
+    .card-icon { font-size: 32px; margin-bottom: 16px; }
+    .card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+    .card p { font-size: 14px; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+    /* Speakers */
+    .speakers { padding: 80px 48px; text-align: center; }
+    .speakers h2 { font-size: 36px; font-weight: 700; margin-bottom: 56px; letter-spacing: -1px; }
+    .speaker-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 32px; max-width: 900px; margin: 0 auto;
+    }
+    .speaker-avatar {
+      width: 96px; height: 96px; border-radius: 50%; margin: 0 auto 16px;
+      background: linear-gradient(135deg, #25f4ee33, #fe2c5533);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px;
+    }
+    .speaker-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .speaker-role { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+    /* Footer */
+    footer {
+      text-align: center; padding: 48px 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.3); font-size: 13px;
+    }
+
+    /* Login Modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #111; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 420px;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 16px; right: 20px;
+      background: none; border: none; color: rgba(255,255,255,0.4);
+      font-size: 24px; cursor: pointer;
+    }
+    .modal-close:hover { color: #fff; }
+    .modal h2 {
+      font-size: 24px; font-weight: 700; margin-bottom: 8px; text-align: center;
+    }
+    .modal .subtitle {
+      font-size: 14px; color: rgba(255,255,255,0.4); text-align: center; margin-bottom: 32px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-group label {
+      display: block; font-size: 13px; font-weight: 500;
+      color: rgba(255,255,255,0.6); margin-bottom: 8px;
+    }
+    .form-group input {
+      width: 100%; padding: 12px 16px; border-radius: 10px; font-size: 15px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: #fff; outline: none; transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: #25f4ee; }
+    .form-group input::placeholder { color: rgba(255,255,255,0.2); }
+    .form-options {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px; font-size: 13px;
+    }
+    .form-options label { color: rgba(255,255,255,0.5); cursor: pointer; }
+    .form-options a { color: #25f4ee; text-decoration: none; }
+    .btn-submit {
+      width: 100%; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600;
+      background: linear-gradient(135deg, #25f4ee, #fe2c55);
+      color: #fff; border: none; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn-submit:hover { opacity: 0.85; }
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0; color: rgba(255,255,255,0.2); font-size: 13px;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.08);
+    }
+    .social-login { display: flex; gap: 12px; }
+    .social-btn {
+      flex: 1; padding: 12px; border-radius: 10px; font-size: 14px;
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: #fff; cursor: pointer; transition: background 0.2s;
+    }
+    .social-btn:hover { background: rgba(255,255,255,0.1); }
+    .modal-footer {
+      text-align: center; margin-top: 24px; font-size: 13px; color: rgba(255,255,255,0.4);
+    }
+    .modal-footer a { color: #25f4ee; text-decoration: none; }
+
+    @media (max-width: 768px) {
+      nav { padding: 16px 20px; }
+      .nav-links a:not(.btn-login) { display: none; }
+      .hero { padding: 100px 20px 60px; }
+      .info, .speakers { padding: 60px 20px; }
+      .modal { margin: 20px; padding: 36px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Nav -->
+  <nav>
+    <div class="logo">TikTok Summit</div>
+    <div class="nav-links">
+      <a href="#agenda">议程</a>
+      <a href="#speakers">嘉宾</a>
+      <a href="#" onclick="openLogin(); return false;" class="btn-login">登录</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">📅 2026年6月15-17日 · 深圳</div>
+    <h1>TikTok<br><span class="gradient">Summit 2026</span></h1>
+    <p>汇聚全球顶尖创作者、品牌与技术专家，探索短视频生态的下一个十年。</p>
+    <div class="hero-actions">
+      <a href="#" onclick="openLogin(); return false;" class="btn-primary">立即报名</a>
+      <a href="#agenda" class="btn-secondary">查看议程</a>
+    </div>
+  </section>
+
+  <!-- Agenda -->
+  <section class="info" id="agenda">
+    <h2>核心议程</h2>
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>增长策略</h3>
+        <p>从 0 到百万粉丝的实战方法论，覆盖内容策略、算法理解与流量获取。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤖</div>
+        <h3>AI × 短视频</h3>
+        <p>AI 生成内容、智能剪辑、自动化运营 — 技术如何重塑创作者生态。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">💰</div>
+        <h3>商业化闭环</h3>
+        <p>TikTok Shop、直播电商、品牌合作的最新玩法与变现路径。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Speakers -->
+  <section class="speakers" id="speakers">
+    <h2>特邀嘉宾</h2>
+    <div class="speaker-grid">
+      <div>
+        <div class="speaker-avatar">🎤</div>
+        <div class="speaker-name">待公布</div>
+        <div class="speaker-role">Keynote Speaker</div>
+      </div>
+      <div>
+        <div class="speaker-avatar">🎬</div>
+        <div class="speaker-name">待公布</div>
+        <div class="speaker-role">Top Creator</div>
+      </div>
+      <div>
+        <div class="speaker-avatar">📊</div>
+        <div class="speaker-name">待公布</div>
+        <div class="speaker-role">Brand Partner</div>
+      </div>
+      <div>
+        <div class="speaker-avatar">⚡</div>
+        <div class="speaker-name">待公布</div>
+        <div class="speaker-role">Tech Lead</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2026 TikTok Summit. All rights reserved.
+  </footer>
+
+  <!-- Login Modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeLogin()">&times;</button>
+      <h2>欢迎回来</h2>
+      <p class="subtitle">登录 TikTok Summit 账户</p>
+      <div id="login-error" style="display:none;padding:10px 14px;border-radius:8px;background:rgba(254,44,85,0.1);color:#fe2c55;font-size:13px;margin-bottom:16px;border:1px solid rgba(254,44,85,0.2);"></div>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" id="username" placeholder="输入用户名" required>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="password" placeholder="输入密码" required>
+        </div>
+        <div class="form-options">
+          <label><input type="checkbox"> 记住我</label>
+          <a href="#">忘记密码？</a>
+        </div>
+        <button type="submit" class="btn-submit">登录</button>
+      </form>
+      <div class="divider">或</div>
+      <div class="social-login">
+        <button class="social-btn" onclick="socialLogin('tiktok')">🎵 TikTok</button>
+        <button class="social-btn" onclick="socialLogin('wechat')">💬 微信</button>
+      </div>
+      <div class="modal-footer">
+        还没有账户？<a href="#" onclick="openLogin(); return false;">立即注册</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script>
+    // If already logged in, go to dashboard
+    if (getCurrentUser()) { window.location.href = 'dashboard.html'; }
+
+    function openLogin() {
+      document.getElementById('loginModal').classList.add('active');
+      document.getElementById('login-error').style.display = 'none';
+    }
+    function closeLogin() {
+      document.getElementById('loginModal').classList.remove('active');
+    }
+    document.getElementById('loginModal').addEventListener('click', function(e) {
+      if (e.target === this) closeLogin();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeLogin();
+    });
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const user = login(username, password);
+      if (user) {
+        window.location.href = 'dashboard.html';
+      } else {
+        const err = document.getElementById('login-error');
+        err.textContent = '用户名或密码错误';
+        err.style.display = 'block';
+      }
+    }
+    function socialLogin(provider) {
+      alert(provider.toUpperCase() + ' 登录功能开发中');
+    }
+
+    // Show message if redirected
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('msg') === 'login_required') openLogin();
+  </script>
+
+</body>
+</html>

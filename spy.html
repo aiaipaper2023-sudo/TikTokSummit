@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spy - TikTok Summit</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="app-nav"></div>
+  <div class="page">
+    <div class="page-header">
+      <h1>🔍 Spy 竞品监控</h1>
+      <p>追踪竞品动态、热门素材与投放策略</p>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="stat">0</div><h3>监控账号</h3><p>正在追踪的竞品</p></div>
+      <div class="card"><div class="stat">0</div><h3>今日新素材</h3><p>发现的新内容</p></div>
+      <div class="card"><div class="stat">0</div><h3>趋势标签</h3><p>热门话题追踪</p></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>账号</th><th>粉丝数</th><th>近7日视频</th><th>互动率</th><th>最后更新</th></tr></thead>
+        <tbody>
+          <tr><td colspan="5" style="text-align:center;color:rgba(255,255,255,0.2);padding:40px;">暂无监控数据，功能开发中...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>
+  <script src="js/nav.js"></script>
+  <script>if (requireAuth('spy')) injectNav('spy');</script>
+</body>
+</html>
