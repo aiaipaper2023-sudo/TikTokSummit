@@ -63,6 +63,7 @@ function verifyToken(token) {
 
 // ── Auth API ──
 app.post('/api/auth/token', jsonParser, (req, res) => {
+  res.set('Cache-Control', 'no-store');
   const { username, password } = req.body;
   const user = USERS[username];
   if (!user || user.password !== password) {
@@ -268,6 +269,11 @@ app.get('/{*path}', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`TikTokSummit gateway on http://0.0.0.0:${PORT}`);
+});
+
+// Also listen on 8800 (Cloudflare origin port)
+app.listen(8800, '0.0.0.0', () => {
+  console.log('TikTokSummit gateway on http://0.0.0.0:8800');
 });
 
 // HTTPS for Cloudflare Full SSL
