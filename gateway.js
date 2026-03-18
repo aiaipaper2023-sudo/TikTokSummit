@@ -244,17 +244,15 @@ app.use((req, res, next) => {
   // Subdomains → API passthrough
   if (req.path.startsWith('/api/')) return next();
 
-  // Subdomains → require auth then proxy
+  // Subdomains → proxy (auth disabled)
   const upstream = UPSTREAMS[host];
   if (upstream) {
-    return requireAuth(req, res, () => {
-      const proxy = createProxyMiddleware({
-        target: upstream,
-        changeOrigin: true,
-        ws: true,
-      });
-      proxy(req, res, next);
+    const proxy = createProxyMiddleware({
+      target: upstream,
+      changeOrigin: true,
+      ws: true,
     });
+    return proxy(req, res, next);
   }
 
   res.status(404).send('Not found');

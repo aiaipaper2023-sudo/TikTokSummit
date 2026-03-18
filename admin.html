@@ -68,12 +68,10 @@
   <script src="js/nav.js"></script>
   <script src="js/analytics.js"></script>
   <script>
-    if (!requireAuth('admin')) { /* redirected */ }
-    else {
-      injectNav('admin');
-      TKS.trackPageView('admin');
-      renderUsers();
-    }
+    // Auth disabled
+    injectNav('admin');
+    TKS.trackPageView('admin');
+    renderUsers();
 
     function renderUsers() {
       const users = getUsers();

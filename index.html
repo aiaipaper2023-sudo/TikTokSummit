@@ -332,7 +332,8 @@
   <script src="js/auth.js"></script>
   <script>
     // If already logged in, go to dashboard
-    if (getCurrentUser()) { window.location.href = 'dashboard.html'; }
+    // Login disabled — go straight to dashboard
+    window.location.href = 'dashboard.html';
 
     function openLogin() {
       document.getElementById('loginModal').classList.add('active');

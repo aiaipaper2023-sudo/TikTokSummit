@@ -109,8 +109,8 @@
   <script src="js/auth.js"></script>
   <script src="js/nav.js"></script>
   <script>
-    if (!requireAuth('analytics')) { /* redirected */ }
-    else {
+    // Auth disabled
+    {
       injectNav('analytics');
       let currentRange = 1;
       let analyticsData = null;
