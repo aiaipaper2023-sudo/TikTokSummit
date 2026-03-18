@@ -232,23 +232,6 @@ function requireAuth(req, res, next) {
   res.redirect(`https://www.tiktoksummit.com/?login=1&return=${encodeURIComponent(returnUrl)}`);
 }
 
-// ── Floating nav widget injected into proxied HTML ──
-const NAV_WIDGET = `
-<div id="tks-nav-widget" style="position:fixed;top:0;left:0;right:0;z-index:99999;height:40px;background:rgba(15,15,26,0.95);backdrop-filter:blur(8px);display:flex;align-items:center;padding:0 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.08);box-shadow:0 2px 12px rgba(0,0,0,0.3);">
-  <a href="https://www.tiktoksummit.com/dashboard.html" style="color:#a78bfa;text-decoration:none;font-weight:600;margin-right:20px;display:flex;align-items:center;gap:6px;">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-    控制台
-  </a>
-  <div style="display:flex;gap:12px;align-items:center;">
-    <a href="https://v2v.tiktoksummit.com" style="color:rgba(255,255,255,0.6);text-decoration:none;padding:4px 8px;border-radius:4px;transition:all .2s;" onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.color='rgba(255,255,255,0.6)';this.style.background='none'">V2V</a>
-    <a href="https://p2v.tiktoksummit.com" style="color:rgba(255,255,255,0.6);text-decoration:none;padding:4px 8px;border-radius:4px;transition:all .2s;" onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.color='rgba(255,255,255,0.6)';this.style.background='none'">P2V</a>
-    <a href="https://spy.tiktoksummit.com" style="color:rgba(255,255,255,0.6);text-decoration:none;padding:4px 8px;border-radius:4px;transition:all .2s;" onmouseover="this.style.color='#fff';this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.color='rgba(255,255,255,0.6)';this.style.background='none'">Spy</a>
-  </div>
-  <div style="margin-left:auto;color:rgba(255,255,255,0.3);font-size:11px;" id="tks-nav-host"></div>
-</div>
-<script>document.getElementById('tks-nav-host').textContent=location.hostname;document.body.style.paddingTop='40px';</script>
-`;
-
 // ── Route by hostname ──
 app.use((req, res, next) => {
   const host = req.hostname;
@@ -269,34 +252,6 @@ app.use((req, res, next) => {
         target: upstream,
         changeOrigin: true,
         ws: true,
-        selfHandleResponse: true,
-        on: {
-          proxyRes(proxyRes, req, res) {
-            const ct = proxyRes.headers['content-type'] || '';
-            // Only inject into HTML responses
-            if (!ct.includes('text/html')) {
-              res.writeHead(proxyRes.statusCode, proxyRes.headers);
-              proxyRes.pipe(res);
-              return;
-            }
-            // Buffer HTML, inject widget before </body>
-            const chunks = [];
-            proxyRes.on('data', c => chunks.push(c));
-            proxyRes.on('end', () => {
-              let body = Buffer.concat(chunks).toString('utf8');
-              if (body.includes('</body>')) {
-                body = body.replace('</body>', NAV_WIDGET + '</body>');
-              } else {
-                body += NAV_WIDGET;
-              }
-              const headers = { ...proxyRes.headers };
-              delete headers['content-length'];
-              headers['content-length'] = Buffer.byteLength(body);
-              res.writeHead(proxyRes.statusCode, headers);
-              res.end(body);
-            });
-          }
-        }
       });
       proxy(req, res, next);
     });
