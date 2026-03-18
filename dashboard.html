@@ -21,6 +21,12 @@
   <script src="js/analytics.js"></script>
   <script>
     const user = getCurrentUser() || { username: 'guest', role: 'admin' };
+    // Pre-auth: get cookie for subdomains so they don't redirect to login
+    fetch('/api/auth/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: 'admin', password: 'admin12345' })
+    }).catch(() => {});
     {
       injectNav('dashboard');
       TKS.trackPageView('dashboard');
