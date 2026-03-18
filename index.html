@@ -331,9 +331,24 @@
 
   <script src="js/auth.js"></script>
   <script>
-    // If already logged in, go to dashboard
-    // Login disabled — go straight to dashboard
-    window.location.href = 'dashboard.html';
+    // Login disabled — auto-auth then redirect
+    (async () => {
+      const params = new URLSearchParams(window.location.search);
+      const returnUrl = params.get('return');
+      if (returnUrl) {
+        // Subdomain auth redirect — silently get cookie and bounce back
+        try {
+          await fetch('/api/auth/token?_t=' + Date.now(), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: 'admin', password: 'admin12345' })
+          });
+        } catch {}
+        window.location.href = returnUrl;
+        return;
+      }
+      window.location.href = 'dashboard.html';
+    })();
 
     function openLogin() {
       document.getElementById('loginModal').classList.add('active');
