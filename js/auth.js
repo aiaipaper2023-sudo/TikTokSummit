@@ -6,11 +6,23 @@ const DEFAULT_USERS = [
   { username: 'demon', password: 'rizzway', role: 'admin' }
 ];
 
-// Initialize users store
+// Initialize users store — merge DEFAULT_USERS into existing list
 function initUsers() {
-  if (!localStorage.getItem('tks_users')) {
+  const existing = localStorage.getItem('tks_users');
+  if (!existing) {
     localStorage.setItem('tks_users', JSON.stringify(DEFAULT_USERS));
+    return;
   }
+  const users = JSON.parse(existing);
+  const names = new Set(users.map(u => u.username));
+  let changed = false;
+  DEFAULT_USERS.forEach(du => {
+    if (!names.has(du.username)) {
+      users.push(du);
+      changed = true;
+    }
+  });
+  if (changed) localStorage.setItem('tks_users', JSON.stringify(users));
 }
 
 function getUsers() {
