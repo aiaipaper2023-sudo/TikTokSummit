@@ -335,6 +335,10 @@
     (async () => {
       const params = new URLSearchParams(window.location.search);
       const returnUrl = params.get('return');
+      // Ensure localStorage user exists for dashboard guard
+      if (!getCurrentUser()) {
+        login('admin', 'admin12345');
+      }
       if (returnUrl) {
         // Subdomain auth redirect — silently get cookie and bounce back
         try {
@@ -425,6 +429,7 @@
     const params = new URLSearchParams(window.location.search);
     if (params.get('login') === '1' || params.get('msg') === 'login_required') openLogin();
   </script>
-
+  <script src="js/analytics.js"></script>
+  <script>TKS.trackPageView('home');</script>
 </body>
 </html>

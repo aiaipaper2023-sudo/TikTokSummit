@@ -15,11 +15,15 @@
     }
     // Periodic flush
     setInterval(flush, FLUSH_INTERVAL);
-    // Flush on page hide
+    // Record page_leave + flush on page hide/unload
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'hidden') flush();
+      if (document.visibilityState === 'hidden') {
+        recordLeave();
+        flush();
+      }
     });
-    window.addEventListener('pagehide', flush);
+    window.addEventListener('pagehide', () => { recordLeave(); flush(); });
+    window.addEventListener('beforeunload', () => { recordLeave(); flush(); });
   }
 
   function getUser() {
@@ -54,12 +58,21 @@
     }
   }
 
+  // Record leave event for current page
+  function recordLeave() {
+    if (currentPage && pageEnterTime) {
+      const duration = Math.round((Date.now() - pageEnterTime) / 1000);
+      if (duration > 0) {
+        track('page_leave', { duration });
+      }
+      pageEnterTime = null; // prevent duplicate leave events
+    }
+  }
+
   // Auto-track page view + time on page
   function trackPageView(pageName) {
     // Record leave event for previous page
-    if (currentPage && pageEnterTime) {
-      track('page_leave', { duration: Math.round((Date.now() - pageEnterTime) / 1000) });
-    }
+    recordLeave();
     currentPage = pageName;
     pageEnterTime = Date.now();
     track('page_view', { referrer: document.referrer });
@@ -74,6 +87,15 @@
   });
 
   init();
+
+  // Auto-detect page name if trackPageView isn't called within 500ms
+  setTimeout(() => {
+    if (!currentPage) {
+      const path = location.pathname.replace(/\/$/, '').split('/').pop() || 'home';
+      const name = path.replace('.html', '') || 'home';
+      trackPageView(name);
+    }
+  }, 500);
 
   // Expose globally
   window.TKS = { track, trackPageView, flush };
