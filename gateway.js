@@ -97,9 +97,14 @@ app.post('/api/auth/logout', (req, res) => {
 app.post('/api/analytics/track', jsonParser, (req, res) => {
   const events = req.body && req.body.events;
   if (!Array.isArray(events) || !events.length) return res.json({ ok: true });
+  // Extract real client IP (Cloudflare → X-Forwarded-For → socket)
+  const clientIp = req.headers['cf-connecting-ip']
+    || (req.headers['x-forwarded-for'] || '').split(',')[0].trim()
+    || req.ip || 'unknown';
   const dateStr = new Date().toISOString().slice(0, 10);
   const filePath = path.join(ANALYTICS_DIR, `events-${dateStr}.jsonl`);
-  const lines = events.map(e => JSON.stringify(e)).join('\n') + '\n';
+  // Inject IP into each event
+  const lines = events.map(e => JSON.stringify({ ...e, ip: clientIp })).join('\n') + '\n';
   fs.appendFile(filePath, lines, () => {});
   res.json({ ok: true, count: events.length });
 });
@@ -208,15 +213,113 @@ app.get('/api/analytics/query', (req, res) => {
     .sort((a, b) => b.ts - a.ts)
     .slice(0, 100);
 
+  // ── IP / Visitor aggregation ──
+  const uniqueIps = new Set(allEvents.map(e => e.ip).filter(Boolean));
+
+  // Per-IP breakdown
+  const ipData = {};
+  allEvents.forEach(e => {
+    if (!e.ip) return;
+    if (!ipData[e.ip]) ipData[e.ip] = { ip: e.ip, pv: 0, sessions: new Set(), pages: {}, lastSeen: 0 };
+    const d = ipData[e.ip];
+    if (e.event === 'page_view') {
+      d.pv++;
+      d.pages[e.page] = (d.pages[e.page] || 0) + 1;
+    }
+    if (e.sid) d.sessions.add(e.sid);
+    if (e.ts > d.lastSeen) d.lastSeen = e.ts;
+  });
+
+  const visitors = Object.values(ipData)
+    .map(d => ({
+      ip: d.ip,
+      pv: d.pv,
+      sessions: d.sessions.size,
+      lastSeen: d.lastSeen,
+      topPages: Object.entries(d.pages).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, views]) => ({ name, views }))
+    }))
+    .sort((a, b) => b.pv - a.pv);
+
+  // If ?ip= filter is provided, return detail for that IP
+  const filterIp = req.query.ip;
+  if (filterIp) {
+    const detail = ipData[filterIp];
+    if (!detail) return res.json({ error: 'IP not found', visitors: [] });
+    const ipEvents = allEvents.filter(e => e.ip === filterIp).sort((a, b) => b.ts - a.ts);
+    const ipPages = Object.entries(detail.pages).sort((a, b) => b[1] - a[1]).map(([name, views]) => ({ name, views }));
+    // Duration per page for this IP
+    const ipLeaves = ipEvents.filter(e => e.event === 'page_leave');
+    const ipDurSums = {}; const ipDurCounts = {};
+    ipLeaves.forEach(e => {
+      const dur = (e.meta && e.meta.duration) || 0;
+      if (dur > 0) {
+        ipDurSums[e.page] = (ipDurSums[e.page] || 0) + dur;
+        ipDurCounts[e.page] = (ipDurCounts[e.page] || 0) + 1;
+      }
+    });
+    const ipDurations = Object.keys(ipDurSums)
+      .map(name => ({ name, views: Math.round(ipDurSums[name] / ipDurCounts[name]) }))
+      .sort((a, b) => b.views - a.views);
+    return res.json({
+      ip: filterIp,
+      pv: detail.pv,
+      sessions: detail.sessions.size,
+      lastSeen: detail.lastSeen,
+      pages: ipPages,
+      pageDurations: ipDurations,
+      timeline: ipEvents.slice(0, 100)
+    });
+  }
+
   res.json({
-    overview: { pv: pvEvents.length, uv: uniqueUsers.size, sessions: uniqueSessions.size, avgDuration },
+    overview: { pv: pvEvents.length, uv: uniqueUsers.size, sessions: uniqueSessions.size, avgDuration, ips: uniqueIps.size },
     pages,
     pageDurations,
     users,
     roles,
     paths,
+    visitors,
     timeline
   });
+});
+
+// ── IP geo lookup (batch, cached) ──
+const geoCache = {};
+app.get('/api/analytics/geo', async (req, res) => {
+  const token = req.cookies.tks_auth;
+  const authUser = verifyToken(token);
+  if (!authUser || authUser.role !== 'admin') return res.status(403).json({ error: 'Admin required' });
+
+  const ips = (req.query.ips || '').split(',').filter(Boolean).slice(0, 50);
+  if (!ips.length) return res.json({});
+
+  const result = {};
+  const toFetch = [];
+  ips.forEach(ip => {
+    if (geoCache[ip]) { result[ip] = geoCache[ip]; }
+    else { toFetch.push(ip); }
+  });
+
+  // Batch lookup via ip-api.com (max 100 per request, free tier)
+  if (toFetch.length) {
+    try {
+      const resp = await fetch('http://ip-api.com/batch?fields=query,country,regionName,city,isp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(toFetch.map(ip => ({ query: ip })))
+      });
+      const data = await resp.json();
+      data.forEach(d => {
+        const geo = { country: d.country || '', region: d.regionName || '', city: d.city || '', isp: d.isp || '' };
+        geoCache[d.query] = geo;
+        result[d.query] = geo;
+      });
+    } catch (e) {
+      toFetch.forEach(ip => { result[ip] = { country: '', region: '', city: '', isp: '' }; });
+    }
+  }
+
+  res.json(result);
 });
 
 // ── Auth middleware ──
@@ -241,10 +344,7 @@ app.use((req, res, next) => {
     return next();
   }
 
-  // Subdomains → API passthrough
-  if (req.path.startsWith('/api/')) return next();
-
-  // Subdomains → proxy (auth disabled)
+  // Subdomains → proxy to upstream (including /api/ paths)
   const upstream = UPSTREAMS[host];
   if (upstream) {
     const proxy = createProxyMiddleware({
@@ -259,7 +359,13 @@ app.use((req, res, next) => {
 });
 
 // ── Static portal for www ──
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  }
+}));
 
 app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
