@@ -367,10 +367,47 @@ app.use((req, res, next) => {
   // Subdomains → proxy to upstream (including /api/ paths)
   const upstream = UPSTREAMS[host];
   if (upstream) {
+    // Intercept /api/ paths — just proxy without injection
+    if (req.path.startsWith('/api/')) {
+      const proxy = createProxyMiddleware({ target: upstream, changeOrigin: true });
+      return proxy(req, res, next);
+    }
+    // For HTML pages: inject analytics tracking script before </body>
     const proxy = createProxyMiddleware({
       target: upstream,
       changeOrigin: true,
       ws: true,
+      selfHandleResponse: true,
+      on: {
+        proxyRes(proxyRes, req, res) {
+          const ct = (proxyRes.headers['content-type'] || '');
+          const isHtml = ct.includes('text/html');
+          // Copy status + headers
+          res.statusCode = proxyRes.statusCode;
+          Object.entries(proxyRes.headers).forEach(([k, v]) => {
+            if (k.toLowerCase() !== 'content-length' && k.toLowerCase() !== 'transfer-encoding') {
+              res.setHeader(k, v);
+            }
+          });
+          if (!isHtml) {
+            // Non-HTML: pipe through
+            proxyRes.pipe(res);
+            return;
+          }
+          // HTML: buffer, inject analytics, send
+          const chunks = [];
+          proxyRes.on('data', c => chunks.push(c));
+          proxyRes.on('end', () => {
+            let html = Buffer.concat(chunks).toString('utf8');
+            const analyticsSnippet = '<script src="https://www.tiktoksummit.com/js/analytics.js"></script>';
+            if (!html.includes('analytics.js')) {
+              html = html.replace('</body>', analyticsSnippet + '</body>');
+            }
+            res.setHeader('content-length', Buffer.byteLength(html));
+            res.end(html);
+          });
+        }
+      }
     });
     return proxy(req, res, next);
   }
