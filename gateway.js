@@ -94,8 +94,28 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 // ── Analytics API ──
-app.post('/api/analytics/track', jsonParser, (req, res) => {
-  const events = req.body && req.body.events;
+// CORS for subdomain tracking
+app.options('/api/analytics/track', (req, res) => {
+  const origin = req.headers.origin || '';
+  if (origin.endsWith('.tiktoksummit.com') || origin === 'https://tiktoksummit.com') {
+    res.set('Access-Control-Allow-Origin', origin);
+    res.set('Access-Control-Allow-Methods', 'POST');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+  }
+  res.sendStatus(204);
+});
+app.post('/api/analytics/track', express.text({ type: '*/*', limit: '1mb' }), (req, res) => {
+  // CORS for subdomains
+  const origin = req.headers.origin || '';
+  if (origin.endsWith('.tiktoksummit.com') || origin === 'https://tiktoksummit.com') {
+    res.set('Access-Control-Allow-Origin', origin);
+  }
+  // Parse body — may arrive as JSON object (jsonParser) or text string (sendBeacon text/plain)
+  let body = req.body;
+  if (typeof body === 'string') {
+    try { body = JSON.parse(body); } catch { return res.json({ ok: true }); }
+  }
+  const events = body && body.events;
   if (!Array.isArray(events) || !events.length) return res.json({ ok: true });
   // Extract real client IP (Cloudflare → X-Forwarded-For → socket)
   const clientIp = req.headers['cf-connecting-ip']

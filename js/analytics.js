@@ -1,7 +1,13 @@
 // Lightweight user behavior tracking SDK
 (function() {
   const FLUSH_INTERVAL = 30000; // 30s
-  const API_ENDPOINT = '/api/analytics/track';
+  const MAIN_ORIGIN = 'https://www.tiktoksummit.com';
+  const isCrossOrigin = location.hostname !== 'www.tiktoksummit.com'
+    && location.hostname !== 'tiktoksummit.com'
+    && location.hostname.endsWith('.tiktoksummit.com');
+  const API_ENDPOINT = isCrossOrigin
+    ? MAIN_ORIGIN + '/api/analytics/track'
+    : '/api/analytics/track';
   let queue = [];
   let sessionId = null;
   let pageEnterTime = null;
@@ -50,11 +56,11 @@
     if (!queue.length) return;
     const batch = queue.splice(0);
     const body = JSON.stringify({ events: batch });
-    // Use sendBeacon for reliability on page unload, fallback to fetch
+    // Use text/plain for sendBeacon to avoid CORS preflight on subdomains
     if (navigator.sendBeacon) {
-      navigator.sendBeacon(API_ENDPOINT, new Blob([body], { type: 'application/json' }));
+      navigator.sendBeacon(API_ENDPOINT, new Blob([body], { type: 'text/plain' }));
     } else {
-      fetch(API_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, keepalive: true }).catch(() => {});
+      fetch(API_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body, keepalive: true }).catch(() => {});
     }
   }
 
@@ -91,8 +97,13 @@
   // Auto-detect page name if trackPageView isn't called within 500ms
   setTimeout(() => {
     if (!currentPage) {
-      const path = location.pathname.replace(/\/$/, '').split('/').pop() || 'home';
-      const name = path.replace('.html', '') || 'home';
+      const pagePath = location.pathname.replace(/\/$/, '').split('/').pop() || 'home';
+      let name = pagePath.replace('.html', '') || 'home';
+      // Prefix with subdomain for cross-origin tracking
+      if (isCrossOrigin) {
+        const sub = location.hostname.replace('.tiktoksummit.com', '');
+        name = sub + ':' + name;
+      }
       trackPageView(name);
     }
   }, 500);
